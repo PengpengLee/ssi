@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="common">
+<!-- ====================公共sql段==================== -->
+	<!-- 分页查询数据，针对mysql -->
+    <sql id="common.pageSqlByLimit">
+    	<![CDATA[ limit #pageData.start#, #pageData.end#]]>
+    </sql>
+    
+<!-- ====================查询==================== -->
+    <!-- 分页查询数据，针对oracle -->
+    <sql id="common.startPageSql">
+    	<![CDATA[ SELECT * FROM ( SELECT t.*,ROWNUM r FROM ( ]]>
+    </sql>
+
+    <sql id="common.endPageSql">
+		<![CDATA[) t WHERE ROWNUM <= #pageData.end# ) where r>= #pageData.start# ]]>
+    </sql>
+    <!-- 查询数据库当前时间戳，针对oracle -->
+    <select id="getSysTimeStamp" resultClass="java.sql.Timestamp" >
+		     select systimestamp From dual
+	</select>
+	<!-- 查询数据库当前时间，针对oracle -->
+	<select id="getSysDate" resultClass="java.util.Date" >
+		     select sysdate From dual
+	</select>
+</sqlMap>
+        

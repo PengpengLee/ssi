@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+	<!-- Some or all of these can be flipped to true for debugging -->
+	<constant name="struts.i18n.encoding" value="UTF-8"></constant>
+	<constant name="struts.locale" value="zh_CN"></constant>
+	<constant name="struts.custom.i18n.resources" value="messageResource"></constant>
+	<constant name="struts.i18n.reload" value="false" />
+	<constant name="struts.devMode" value="false" />
+	<constant name="struts.ognl.allowStaticMethodAccess" value="true" />
+	<!-- 配置允许上传的文件大小，单位字节 -->
+	<constant name="struts.multipart.maxSize" value="10485760" /><!-- 10485760字节，10M字节 -->
+	<constant name="struts.multipart.saveDir" value="/tmp" />
+
+
+	<!--ssi2为默认的项目包 -->
+	<package name="ssi2" extends="json-default" namespace="/">
+		<interceptors>
+			<interceptor name="visitlogInterceptor"
+				class="cn.itcast.ssi.common.interceptor.UserVisitLogInterceptor" />
+			<interceptor name="loginInterceptor"
+				class="cn.itcast.ssi.sysmgmt.interceptor.LoginInterceptor" />
+			<interceptor name="commonBusinessInterceptor"
+				class="cn.itcast.ssi.sysmgmt.interceptor.CommonBusinessInterceptor" />
+			<interceptor-stack name="ssi2Statck">
+				<interceptor-ref name="basicStack" />
+				<interceptor-ref name="chain" />
+				<interceptor-ref name="staticParams" />
+				<interceptor-ref name="visitlogInterceptor" />
+				<interceptor-ref name="loginInterceptor" />
+				<interceptor-ref name="commonBusinessInterceptor" />
+				<interceptor-ref name="params">
+					<param name="excludeParams">dojo\..*,^struts\..*,.*\\u0023.*</param>
+				</interceptor-ref>
+				<interceptor-ref name="defaultStack"></interceptor-ref>
+			</interceptor-stack>
+		</interceptors>
+		
+		<!-- 默认拦截器栈 -->
+		<default-interceptor-ref name="ssi2Statck"></default-interceptor-ref>
+
+		<global-results>
+			<!-- 定义全局异常页面 -->
+			<result name="Exception">/modules/common/error/error_500.jsp</result>
+			<!-- 登录跳转Action -->
+			<result name="login" type="redirectAction">
+				<param name="namespace">/</param>
+				<param name="actionName">login</param>
+			</result>
+			<!-- 权限跳转Action -->
+			<result name="index" type="redirectAction">
+				<param name="namespace">/</param>
+				<param name="actionName">index</param>
+			</result>
+			<!-- ajax异步请求JSON输出流 -->
+			<result name="json" type="json">
+				<param name="root">msg</param>
+			</result>
+		</global-results>
+		<global-exception-mappings>
+			<exception-mapping exception="java.lang.Exception"
+				result="Exception" />
+		</global-exception-mappings>
+	</package>
+
+</struts>

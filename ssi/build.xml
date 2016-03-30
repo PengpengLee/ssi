@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?>
+<project name="ssi" default="war">
+
+    <!-- =================================================================== -->
+    <!-- 变量定义 =========================================================== -->
+    <!-- =================================================================== -->
+    <property name="base-dir" location="."/>
+    <property name="all-lib-dir" location="${base-dir}/../lib"/>
+    <property name="lib-dir" location="${base-dir}/WebRoot/WEB-INF/lib"/>
+    <!-- 当前工程用到的jar文件的存放的根路径 -->
+    <property name="checkstyle-dir" location="${base-dir}/../core/checkstyle"/>
+    <property name="src-dir" location="${base-dir}/src"/>
+    <property name="out-dir" location="${base-dir}/WebRoot/WEB-INF/classes"/>
+    <property name="report-dir" location="${base-dir}/report"/>
+    <property name="dist-dir" location="${base-dir}/dist"/>
+    <!-- 打包输出路径 -->
+    <property name="project-name" value="ssi"/>
+    <property name="webroot-dir" location="${base-dir}/WebRoot"/>
+
+    <condition property="isWindows">
+        <os family="windows"></os>
+    </condition>
+     <condition property="isUnix">
+        <os family="unix"></os>
+    </condition>
+
+    <!-- 定义编译依赖的CLASS_PATH，目前将edu平台用到的jar文件都加入到CLASS_PATH中 -->
+    <path id="classpath.all">
+        <fileset id="alljars" dir="${all-lib-dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="classpath.dep">
+    </path>
+
+    <!-- Enviornment -->
+    <target name="env" description="Set enviornment">
+        <condition property="target-version" value="1.8">
+            <equals arg1="${ant.java.version}" arg2="1.8"/>
+        </condition>
+        <condition property="target-version" value="1.7">
+            <equals arg1="${ant.java.version}" arg2="1.7"/>
+        </condition>
+        <condition property="target-version" value="1.6">
+            <equals arg1="${ant.java.version}" arg2="1.6"/>
+        </condition>
+        <condition property="target-version" value="1.5">
+            <not>
+                <isset property="target-version"/>
+            </not>
+        </condition>
+        <echo message="Jdk_Version: ${ant.java.version}, Target_Version: ${target-version}"/>
+    </target>
+
+    <!-- 编译前环境准备 -->
+    <target name="init" description="initialize project environment." depends="env">
+        <tstamp>
+            <format property="TimeSign" pattern="yyyyMMddHHmm"/>
+        </tstamp>
+        <!-- 创建输出的文件夹 -->
+        <mkdir dir="${out-dir}"/>
+        <mkdir dir="${report-dir}"/>
+        <mkdir dir="${dist-dir}"/>
+        <antcall target="init-self"/>
+    </target>
+
+    <target name="init-self">
+    </target>
+
+    <!-- 拷贝jar包 -->
+    <target name="copy-jars">
+        <copy todir="${out-dir}">
+            <fileset dir="${src-dir}">
+                <include name="**/*.xml"/>
+                <include name="**/*.properties"/>
+                <exclude name="**/*.java"/>
+                <exclude name="**/uploadfiles/*.*"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- 依赖工程的编译Targets定义=========================================== -->
+    <!-- =================================================================== -->
+    <!-- target name="compile-ref-projects" description="comile the referenced other projects.">
+    	<ant antfile="../framework/build.xml" inheritAll="false"/>
+    	<ant antfile="../dataintegration/build.xml" inheritAll="false"/>
+        <ant antfile="../core/build.xml" inheritAll="false"/>
+    </target -->
+	<target name="compile-ref-projects" description="comile the referenced other projects."></target>
+
+    <!-- 将依赖工程的class拷贝到自己的输出路径中（主要目的是在用eclipse开发时，由于
+          Tomcat无法找到WEB-INF以外的class，所以需要将依赖的工程的class拷贝到本工程
+                  的WEB-INF的classes目录中） -->
+	<target name="copy-ref-projects-classes" description="comile the referenced other projects."></target>
+    <!-- target name="copy-ref-projects-classes" description="copy the compile result of the referenced other projects.">
+        <ant antfile="../dataintegration/build.xml" target="compile-self" inheritAll="false"/>
+        <ant antfile="../core/build.xml" target="compile-self" inheritAll="false"/>
+        <copy todir="${out-dir}">
+        	<fileset dir="../framework/classes">
+                <exclude name="**/*Test.class"/>
+        	</fileset>
+            <fileset dir="../dataintegration/classes">
+                <exclude name="**/*Test.class"/>
+            </fileset>
+            <fileset dir="../core/classes">
+                <exclude name="**/*Test.class"/>
+            </fileset>
+        </copy>
+    </target -->
+
+    <!-- 编译当前Project -->
+    <target name="compile-self" depends="init">
+        <echo message="**编译${project-name}工程**"/>
+        <javac srcdir="${src-dir}" destdir="${out-dir}" debug="true" encoding="UTF-8" target="${target-version}" fork="true" memoryMaximumSize="256m">
+            <classpath refid="classpath.all"/>
+            <classpath refid="classpath.dep"/>
+        </javac>
+        <!-- compile tests -->
+        <!--<mkdir dir="${test-outdir}/classes"/>
+       <javac srcdir="${testcase-dir}" destdir="${test-outdir}" debug="true" encoding="UTF-8">       
+            <classpath refid="classpath.all" />
+        </javac>-->
+
+        <copy todir="${out-dir}">
+            <fileset dir="${src-dir}">
+                <include name="**/*.tld"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <antcall target="copy-jars"/>
+    </target>
+
+
+    <!-- 环境清理Targets定义，包括依赖工程的环境清理 -->
+    <target name=".clean">
+        <echo message="**清理${project-name}编译环境（包括依赖工程的编译环境清理）**"/>
+        <antcall target="clean-self"/>
+        <antcall target="clean-ref"/>
+    </target>
+
+    <!-- 清理自己的编译环境 -->
+    <target name="clean-self">
+        <delete quiet="true" includeEmptyDirs="true">
+            <fileset dir="${report-dir}">
+                <exclude name=".cvsignore"/>
+                <exclude name="CVS"/>
+                <exclude name="svn"/>
+            </fileset>
+            <fileset dir="${out-dir}">
+            </fileset>
+            <fileset dir="${dist-dir}">
+            </fileset>
+        </delete>
+    </target>
+
+    <!-- 清理参照工程的编译环境 -->
+	<target name="clean-ref"></target>
+    <!-- target name="clean-ref">
+        <ant antfile="../dataintegration/build.xml" target=".clean" inheritAll="false"/>
+        <ant antfile="../core/build.xml" target=".clean" inheritAll="false"/>
+    </target -->
+
+    <!-- 开发测试用的工程编译（采取增量式的编译）  -->
+    <target name=".compile" depends="env, init,compile-ref-projects,copy-ref-projects-classes,compile-self"/>
+
+    <!-- 打WAR包  -->
+    <target name="war" depends=".compile">
+        <delete file="${dist-dir}/${project-name}.war"/>
+        <jar jarfile="${dist-dir}/${project-name}.war" update="true">
+            <fileset dir="${webroot-dir}" excludes="**/lib/,**/work/,**/tmp/,**/uploadfiles/,**/test/"/>
+        </jar>
+        <antcall target="bin"></antcall>
+    </target>
+     <target name="bin" if="isUnix">
+        <exec executable="/bin/sh">
+            <arg line="/opt/build/deploynew.sh"/>
+        </exec>
+    </target>
+
+</project> 

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<!-- The SQL in these maps files has purposely been typed with more verbosity 
+	than is actually required.For example, many of the selects could have just 
+	used SELECT * FROM... instead of listing all of the columns. This is to demonstrate 
+	that even complex SQL can be handled and coded and formatted the way SQL 
+	was meant to be (i.e. not a bunch of concatenated strings in a Java class). -->
+
+<sqlMap namespace="log">
+	<typeAlias alias="Log"
+		type="cn.itcast.ssi.common.entity.Log" />
+	
+	<!-- save -->
+	<!-- 插入一条用户数据 -->
+	<insert id="insertLog" parameterClass="Log">
+		<![CDATA[ 
+			insert into tb_sys_log (
+				ID, CREATE_TIME, UPDATE_TIME, DEL_TIME, DEL, RESERVE_FIELD1, RESERVE_FIELD2, RESERVE_FIELD3, RESERVE_FIELD4, RESERVE_FIELD5, 
+				MODEL, FUNCTION, OPERATE, OPERATER, REMOTE_ADDR, LOG_LEVEL, ENTITY_KEY, ENTITY_NAME
+			) values (
+				#id#, #createTime#, #updateTime#, #deleteTime#, #del#, #reserveField1#, #reserveField2#, #reserveField3#, #reserveField4#, #reserveField5#,
+				#model#, #function#, #operate#, #operater#, #remoteAddr#, #logLevel#, #entityKey#, #entityName#
+			)
+		]]>
+	</insert>
+	
+	<!-- delete -->
+	<!-- 日志没有删除操作 -->
+	
+	<!-- update -->
+	<!-- 日志没有更新操作 -->
+	
+	<!-- select -->
+	<!-- 根据条件获取日志总数，用于分页 -->
+	<select id="getLogListCount" parameterClass="map" resultClass="int">
+		select count(1) from tb_sys_log t
+		where 1=1
+		<isNotEmpty property="ss">
+			<isNotEmpty property="sf" prepend=" and ">
+				$sf$ = #ss#
+			</isNotEmpty>
+		</isNotEmpty>
+	</select>
+	
+	<!-- 根据条件获取日志列表，用于分页 -->
+	<select id="getLogList" parameterClass="map" resultClass="Log">
+		select * from tb_sys_log t
+		where 1=1
+		<isNotEmpty property="ss">
+			<isNotEmpty property="sf" prepend=" and ">
+				$sf$ = #ss#
+			</isNotEmpty>
+		</isNotEmpty>
+		<include refid="common.pageSqlByLimit" />
+	</select>
+	
+</sqlMap>

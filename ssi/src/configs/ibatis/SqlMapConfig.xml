@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE sqlMapConfig
+        PUBLIC "-//ibatis.apache.org//DTD SQL Map Config 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+	<settings useStatementNamespaces="true" />
+
+	<!-- 公共sql，分页 -->
+	<sqlMap resource="cn/itcast/ssi/common/dao/sql/ibatisCommon.xml" />
+	
+	<!-- 系统管理模块 BEGIN -->
+	
+	<!-- 系统用户表sql -->
+	<sqlMap resource="cn/itcast/ssi/sysmgmt/dao/sql/User.xml"/>
+	<!-- 系统角色表sql -->
+	<sqlMap resource="cn/itcast/ssi/sysmgmt/dao/sql/Role.xml"/>
+	<!-- 系统菜单表sql -->
+	<sqlMap resource="cn/itcast/ssi/sysmgmt/dao/sql/menu.xml"/>
+	<!-- 日志表sql -->
+	<sqlMap resource="cn/itcast/ssi/sysmgmt/dao/sql/log.xml"/>
+	
+	<!-- 系统管理模块 END -->
+	<!-- 试题管理 BEGIN -->
+	
+	<!-- 试题管理 -->	
+	<sqlMap resource="cn/itcast/ssi/testquestion/dao/sql/TestQuestion.xml"/>
+	<sqlMap resource="cn/itcast/ssi/testquestion/dao/sql/Classes.xml"/>
+	<!-- 试题管理 END -->
+	
+	
+	<!-- 试卷管理 -->
+	<sqlMap resource="cn/itcast/ssi/testquestion/dao/sql/TestPaper.xml"/>
+	<!-- 学科管理 -->
+	<sqlMap resource="cn/itcast/ssi/testquestion/dao/sql/Subject.xml"/>
+	<!-- 章节管理 -->
+	<sqlMap resource="cn/itcast/ssi/testquestion/dao/sql/Chapter.xml"/>
+	<!-- 试卷对应的试题关联表 -->
+	<sqlMap resource="cn/itcast/ssi/testquestion/dao/sql/TestPaperQuestion.xml"/>
+	<!-- 试卷发布记录表 -->
+	<sqlMap resource="cn/itcast/ssi/testquestion/dao/sql/PublishRecord.xml"/>
+	<!-- 考试成绩统计 -->
+	<sqlMap resource="cn/itcast/ssi/testquestion/dao/sql/ExamStatistics.xml"/>
+	
+	<!-- 学校常量表 -->
+	<sqlMap resource="cn/itcast/ssi/testquestion/dao/sql/School.xml"/>
+	
+</sqlMapConfig> 

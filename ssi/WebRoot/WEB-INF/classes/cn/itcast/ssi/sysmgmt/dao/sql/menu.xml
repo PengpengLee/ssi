@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<!-- The SQL in these maps files has purposely been typed with more verbosity 
+	than is actually required.For example, many of the selects could have just 
+	used SELECT * FROM... instead of listing all of the columns. This is to demonstrate 
+	that even complex SQL can be handled and coded and formatted the way SQL 
+	was meant to be (i.e. not a bunch of concatenated strings in a Java class). -->
+
+<sqlMap namespace="menu">
+	<typeAlias alias="MenuPO" type="cn.itcast.ssi.sysmgmt.entity.MenuPO" />
+	<typeAlias alias="MenuRolePO" type="cn.itcast.ssi.sysmgmt.entity.MenuRolePO" />
+	<typeAlias alias="MenuVO" type="cn.itcast.ssi.sysmgmt.vo.MenuVO" />
+
+	<!-- save -->
+	<!-- 插入一条菜单数据 -->
+	<insert id="insertMenu" parameterClass="MenuPO">
+		<![CDATA[ 
+			insert into tb_sys_menu (
+				ID, CREATE_TIME, UPDATE_TIME, DEL_TIME, DEL, RESERVE_FIELD1, RESERVE_FIELD2, RESERVE_FIELD3, RESERVE_FIELD4, RESERVE_FIELD5, 
+				name, code, icon, parent_id, action_url, role_id, type, serial_num, color, remark
+			) values (
+				#id#, #createTime#, #updateTime#, #deleteTime#, #del#, #reserveField1#, #reserveField2#, #reserveField3#, #reserveField4#, #reserveField5#,
+				#name#, #code#, #icon#, #parentId#, #actionUrl#, #roleId#, #type#, #serialNum#, #color#, #remark#
+			)
+		]]>
+	</insert>
+	<!-- 插入一条菜单角色数据 -->
+	<insert id="insertMenuRole" parameterClass="MenuRolePO">
+		<![CDATA[ 
+			insert into tb_sys_menu_role (
+				ID, CREATE_TIME, UPDATE_TIME, DEL_TIME, DEL, RESERVE_FIELD1, RESERVE_FIELD2, RESERVE_FIELD3, RESERVE_FIELD4, RESERVE_FIELD5, 
+				role_id, menu_id, remark
+			) values (
+				#id#, #createTime#, #updateTime#, #deleteTime#, #del#, #reserveField1#, #reserveField2#, #reserveField3#, #reserveField4#, #reserveField5#,
+				#roleId#, #menuId#, #remark#
+			)
+		]]>
+	</insert>
+	
+	<!-- delete -->
+	<!-- 根据菜单id删除菜单：逻辑删除 -->
+	<update id="delMenu" parameterClass="String">
+		update tb_sys_menu set del = '0' where id = #id#
+	</update>
+	
+	<!-- update -->
+	<!-- 修改菜单信息：必须确保参数对象为持久化对象 -->
+	<update id="updateMenu" parameterClass="MenuPO">
+		update tb_sys_menu set name=#name#
+		<isNotEmpty property="code" prepend=",">
+			code=#code#
+		</isNotEmpty>
+		<isNotEmpty property="icon" prepend=",">
+			icon=#icon#
+		</isNotEmpty>
+		<isNotEmpty property="parentId" prepend=",">
+			parent_id=#parentId#
+		</isNotEmpty>
+		<isNotEmpty property="roleId" prepend=",">
+			role_id=#roleId#
+		</isNotEmpty>
+		<isNotEmpty property="actionUrl" prepend=",">
+			action_url=#actionUrl#
+		</isNotEmpty>
+		<isNotEmpty property="type" prepend=",">
+			type=#type#
+		</isNotEmpty>
+		<isNotEmpty property="serialNum" prepend=",">
+			serial_num=#serialNum#
+		</isNotEmpty>
+		<isNotEmpty property="color" prepend=",">
+			color=#color#
+		</isNotEmpty>
+		<isNotEmpty property="remark" prepend=",">
+			remark=#remark#
+		</isNotEmpty>
+		<isNotEmpty property="updateTime" prepend=",">
+			update_time=#updateTime#
+		</isNotEmpty>
+		<isNotEmpty property="deleteTime" prepend=",">
+			del_time=#deleteTime#
+		</isNotEmpty>
+		<isNotEmpty property="del" prepend=",">
+			del=#del#
+		</isNotEmpty>
+		where id=#id#
+	</update>
+	
+	<!-- select -->
+	<sql id="selectMenu">
+		select t.id, t.name, t.code, t.icon, t.parent_id parentId, t.role_id roleId, t.action_url actionUrl, 
+			t.type, t.serial_num serialNum, t.remark, t.create_time createTime, t.del, t.color
+		from tb_sys_menu t
+	</sql>
+	
+	<!-- 根据ID获取菜单 -->
+	<select id="getMenuById" parameterClass="String" resultClass="MenuPO">
+		<include refid="selectMenu" />
+		where t.ID = #id# and t.del='1'
+	</select>
+	
+	<!-- 根据角色ID获取菜单列表：角色权限越大，角色编号越小 -->
+	<select id="getMenuByRoleId" parameterClass="String" resultClass="MenuPO">
+		<include refid="selectMenu" />
+		where t.del='1' and t.role_id>= $roleId$
+	</select>
+	
+	<!-- 根据条件获取菜单：模糊查询 -->
+	<sql id="getMenuByCondition">
+		<include refid="selectMenu" />
+		where t.del='1'
+		<isNotEmpty property="name" prepend=" and ">
+			t.name like '%$name$%'
+		</isNotEmpty>
+	</sql>
+	<!-- 分页获取菜单总数：支持模糊查询 -->
+	<select id="getPageListDataCount" parameterClass="map" resultClass="String">
+		select count(1) from (
+			<include refid="getMenuByCondition" />
+		) t
+	</select>
+	<!-- 分页获取菜单：支持模糊查询 -->
+	<select id="getPageListData" parameterClass="map" resultClass="MenuPO">
+		<include refid="getMenuByCondition" />
+		<include refid="common.pageSqlByLimit" />
+	</select>
+	
+</sqlMap>

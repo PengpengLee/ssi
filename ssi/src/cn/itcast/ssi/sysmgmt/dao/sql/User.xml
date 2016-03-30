@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<!-- The SQL in these maps files has purposely been typed with more verbosity 
+	than is actually required.For example, many of the selects could have just 
+	used SELECT * FROM... instead of listing all of the columns. This is to demonstrate 
+	that even complex SQL can be handled and coded and formatted the way SQL 
+	was meant to be (i.e. not a bunch of concatenated strings in a Java class). -->
+
+<sqlMap namespace="user">
+	<typeAlias alias="UserPO"
+		type="cn.itcast.ssi.sysmgmt.entity.UserPO" />
+	<typeAlias alias="UserVO"
+		type="cn.itcast.ssi.sysmgmt.vo.UserVO" />
+	<typeAlias alias="UserRolePO"
+		type="cn.itcast.ssi.sysmgmt.entity.UserRolePO" />
+
+	<!-- save -->
+	<!-- 插入一条用户数据 -->
+	<insert id="insertUser" parameterClass="UserPO">
+		<![CDATA[ 
+			insert into tb_sys_user (
+				ID, CREATE_TIME, UPDATE_TIME, DEL_TIME, DEL, RESERVE_FIELD1, RESERVE_FIELD2, RESERVE_FIELD3, RESERVE_FIELD4, RESERVE_FIELD5, 
+				USERNAME, PASSWORD, NAME, EMAIL, MOBILE, QQ, we_chat, SEX, BIRTHDAY, CARD, PROVINCE, CITY, DISTRICT, STREET, ADDRESS,
+				TELEPHONE, HEAD_PATH, USER_TYPE
+			) values (
+				#id#, #createTime#, #updateTime#, #deleteTime#, #del#, #reserveField1#, #reserveField2#, #reserveField3#, #reserveField4#, #reserveField5#,
+				#username#, #password#, #name#, #email#, #mobile#, #qq#, #weChat#, #sex#, #birthday#, #card#, #province#, #city#, #district#,
+				#street#, #address#, #telephone#, #headPath#, #userType#
+			)
+		]]>
+	</insert>
+	<!-- 插入一条用户角色数据 -->
+	<insert id="insertUserRole" parameterClass="UserRolePO">
+		<![CDATA[ 
+			insert into tb_sys_user_role (
+				ID, CREATE_TIME, UPDATE_TIME, DEL_TIME, DEL, RESERVE_FIELD1, RESERVE_FIELD2, RESERVE_FIELD3, RESERVE_FIELD4, RESERVE_FIELD5, 
+				role_id, user_id, remark
+			) values (
+				#id#, #createTime#, #updateTime#, #deleteTime#, #del#, #reserveField1#, #reserveField2#, #reserveField3#, #reserveField4#, #reserveField5#,
+				#roleId#, #userId#, #remark#
+			)
+		]]>
+	</insert>
+	
+	<!-- delete -->
+	<!-- 根据用户id删除用户：逻辑删除 -->
+	<update id="delUserById" parameterClass="String">
+		update tb_sys_user set del = '0' where id = #id#
+	</update>
+	
+	<!-- update -->
+	<!-- 修改用户信息：必须确保参数对象为持久化对象 -->
+	<update id="updateUser" parameterClass="UserPO">
+		update tb_sys_user set
+		CREATE_TIME = #createTime#, 
+		UPDATE_TIME = #updateTime#, 
+		DEL_TIME = #deleteTime#, 
+		DEL = #del#, 
+		RESERVE_FIELD1 = #reserveField1#, 
+		RESERVE_FIELD2 = #reserveField2#, 
+		RESERVE_FIELD3 = #reserveField3#, 
+		RESERVE_FIELD4 = #reserveField4#, 
+		RESERVE_FIELD5 = #reserveField5#, 
+				
+		USERNAME = #username#, 
+		PASSWORD = #password#, 
+		NAME = #name#, 
+		EMAIL = #email#, 
+		MOBILE = #mobile#, 
+		QQ = #qq#, 
+		WE_CHAT = #weChat#, 
+		SEX = #sex#, 
+		BIRTHDAY = #birthday#, 
+		CARD = #card#, 
+		PROVINCE = #province#, 
+		CITY = #city#, 
+		DISTRICT = #district#, 
+		STREET = #street#, 
+		ADDRESS = #address#,
+		TELEPHONE = #telephone#, 
+		HEAD_PATH = #headPath#
+		
+		where id = #id#
+	</update>
+	<!-- 更新用户角色 -->
+	<update id="updateUserType" parameterClass="UserRolePO">
+		update tb_sys_user t set t.user_type=#roleId# where t.id=#userId#
+	</update>
+	
+	<!-- select -->
+	<sql id="selectUser">
+	<!-- select * from (
+		select u.id, u.username, u.password, u.name, u.email, u.mobile, 
+			u.create_time createTime, u.del, r.role_id userType	
+		from tb_sys_user u, tb_sys_user_role r
+		where u.del='1' and r.del='1' and u.id=r.user_id
+		order by u.create_time desc
+	) u -->
+	select * from (
+		select u.id, u.username, u.password, u.name, u.email, u.mobile, 
+			u.create_time createTime, u.del, u.user_type userType	
+		from tb_sys_user u
+		where u.del='1'
+		order by u.create_time desc
+	) u
+	</sql>
+	
+	<!-- 根据用户名密码获取用户：登录 -->
+	<select id="getUserForLogin" parameterClass="map" resultClass="UserPO">
+		<include refid="user.selectUser" />
+		where (u.username = #username# or u.name=#username#)
+			and u.PASSWORD = #password# and u.del='1'
+	</select>
+	<!-- 根据ID获取用户 -->
+	<select id="getUserById" parameterClass="String" resultClass="UserPO">
+		<include refid="user.selectUser" />
+		where u.ID = #id# and u.del='1'
+	</select>
+	<!-- 根据属性条件获取用户：完全匹配 -->
+	<select id="getUserByProperty" parameterClass="map" resultClass="UserPO">
+		<include refid="user.selectUser" />
+		where u.del='1'
+		<isNotEmpty property="id" prepend=" and ">
+			u.ID = #id#
+		</isNotEmpty>
+		<isNotEmpty property="username" prepend=" and ">
+			u.username = #username#
+		</isNotEmpty>
+		<isNotEmpty property="password" prepend=" and ">
+			u.password = #password#
+		</isNotEmpty>
+		<isNotEmpty property="name" prepend=" and ">
+			u.name = #name#
+		</isNotEmpty>
+		<isNotEmpty property="email" prepend=" and ">
+			u.email = #email#
+		</isNotEmpty>
+		<isNotEmpty property="mobile" prepend=" and ">
+			u.mobile = #mobile#
+		</isNotEmpty>
+	</select>
+	<!-- 根据条件获取用户：模糊查询 -->
+	<sql id="getUserByCondition">
+		<include refid="user.selectUser" />
+		where u.del='1'
+		<isNotEmpty property="username">
+			<isNotEmpty property="name" prepend=" and ">
+				(u.name like '%$name$%' or u.username like '%$username$%')
+			</isNotEmpty>
+		</isNotEmpty>
+		
+		<isNotEmpty property="flag">
+			<isEqual property="flag" compareValue="true">
+				<isNotEmpty property="user_type" prepend=" and ">
+					u.userType='$user_type$'
+				</isNotEmpty>
+			</isEqual>
+			<isEqual property="flag" compareValue="false">
+				<isNotEmpty property="user_type" prepend=" and ">
+					u.userType > $user_type$
+				</isNotEmpty>
+			</isEqual>
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 分页获取用户总数：支持模糊查询 -->
+	<select id="getPageListDataCount" parameterClass="map" resultClass="String">
+		select count(1) from (
+			<include refid="user.getUserByCondition" />
+		) t
+	</select>
+	
+	<!-- 分页获取用户：支持模糊查询 -->
+	<select id="getPageListData" parameterClass="map" resultClass="UserPO">
+		<include refid="user.getUserByCondition" />
+		<include refid="common.pageSqlByLimit" />
+	</select>
+	
+</sqlMap>

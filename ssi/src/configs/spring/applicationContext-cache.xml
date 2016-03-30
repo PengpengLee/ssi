@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans  http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd"
+       default-lazy-init="false" default-autowire="byName">
+    <!--action  action中service 的实例变量名称必须和 service bean id（iuserService）一样-->
+    <!--   注意 action bean 定义中 必须 加上  scope="prototype"-->
+    <bean name="memcachedClientBuilder"
+          class="net.rubyeye.xmemcached.XMemcachedClientBuilder">
+        <constructor-arg type="java.lang.String">
+            <value>${cache.server}</value>
+        </constructor-arg>
+
+        <!--服务器验证，暂时不验证-->
+           <!--
+        <property name="authInfoMap">
+            <map>
+                <entry key-ref="server1">
+                    <bean class="net.rubyeye.xmemcached.auth.AuthInfo" factory-method="typical">
+                        <constructor-arg index="0">
+                            <value>cacheuser</value>
+                        </constructor-arg>
+                        <constructor-arg index="1">
+                            <value>123456</value>
+                        </constructor-arg>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        -->
+        <property name="connectionPoolSize" value="${cache.connectionpool}"></property>
+        <property name="commandFactory">
+            <bean class="net.rubyeye.xmemcached.command.TextCommandFactory"></bean>
+        </property>
+        <property name="sessionLocator">
+            <bean class="net.rubyeye.xmemcached.impl.KetamaMemcachedSessionLocator"></bean>
+        </property>
+        <property name="transcoder">
+            <bean class="net.rubyeye.xmemcached.transcoders.SerializingTranscoder"/>
+        </property>
+    </bean>
+    <!-- Use factory bean to build memcached client -->
+    <bean name="memcachedClient" factory-bean="memcachedClientBuilder" factory-method="build" destroy-method="shutdown">
+        <property name="connectTimeout" value="600000"/>
+        <property name="opTimeout" value="600000"/>
+    </bean>
+    <!-- <bean name="icacheUtil" class="cn.itcast.dataintegration.common.cache.Memcached">
+    </bean> -->
+
+</beans>

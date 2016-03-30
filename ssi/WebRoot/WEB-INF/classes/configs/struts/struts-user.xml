@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN"
+        "http://struts.apache.org/dtds/struts-2.1.dtd">
+<struts>
+	<!-- 用户登录/登出 -->
+	<package name="userLogin" namespace="/" extends="ssi2">
+		<action name="login" class="loginAction" method="login">
+			<result>/modules/login.jsp</result>
+		</action>
+		<action name="doLogout" class="loginAction" method="doLogout">
+			<result name="logout">/modules/logout.jsp</result>
+		</action>
+	</package>
+
+	<!-- 用户注册/初始化 -->
+	<package name="user" namespace="/user" extends="ssi2">
+		<action name="index" class="userAction" method="index">
+			<result name="success">/modules/index.jsp</result>
+		</action>
+	</package>
+
+	<!-- 用户管理 -->
+	<package name="userManage" namespace="/userManage" extends="ssi2">
+		<action name="*" class="userActionManage" method="{1}">
+		</action>
+	</package>
+
+	<!-- 用户管理：JSON -->
+	<package name="userJson" namespace="/userJson" extends="ssi2">
+		<action name="doLogin" class="loginAction" method="doLogin">
+			<result name="json" type="json">
+				<param name="root">msg</param>
+			</result>
+		</action>
+	</package>
+</struts>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<!-- The SQL in these maps files has purposely been typed with more verbosity 
+	than is actually required.For example, many of the selects could have just 
+	used SELECT * FROM... instead of listing all of the columns. This is to demonstrate 
+	that even complex SQL can be handled and coded and formatted the way SQL 
+	was meant to be (i.e. not a bunch of concatenated strings in a Java class). -->
+
+<sqlMap namespace="role">
+	<typeAlias alias="RolePO"
+		type="cn.itcast.ssi.sysmgmt.entity.RolePO" />
+	<typeAlias alias="RoleVO"
+		type="cn.itcast.ssi.sysmgmt.vo.RoleVO" />
+	<typeAlias alias="UserRolePO"
+		type="cn.itcast.ssi.sysmgmt.entity.UserRolePO" />
+	<typeAlias alias="UserRoleVO"
+		type="cn.itcast.ssi.sysmgmt.vo.UserRoleVO" />
+
+	<!-- save -->
+	<!-- 插入一条用户角色数据 -->
+	<insert id="insertUserRole" parameterClass="UserRolePO">
+		<![CDATA[ 
+			insert into tb_sys_user_role (
+				ID, CREATE_TIME, UPDATE_TIME, DEL_TIME, DEL, RESERVE_FIELD1, RESERVE_FIELD2, RESERVE_FIELD3, RESERVE_FIELD4, RESERVE_FIELD5, 
+				role_id, user_id, remark
+			) values (
+				#id#, #createTime#, #updateTime#, #deleteTime#, #del#, #reserveField1#, #reserveField2#, #reserveField3#, #reserveField4#, #reserveField5#,
+				#roleId#, #userId#, #remark#
+			)
+		]]>
+	</insert>
+	<!-- delete -->
+	<!-- 删除用户角色：物理删除 -->
+	<delete id="deleteUserRole" parameterClass="UserRolePO">
+		delete from tb_sys_user_role where role_id=#roleId# and user_id=#userId#
+	</delete>
+	
+	<!-- update -->
+	<!-- 更新用户角色 -->
+	<update id="updateUserRole" parameterClass="UserRolePO">
+		update tb_sys_user_role t set t.role_id=#roleId# where t.user_id=#userId#
+	</update>
+	
+	<!-- select -->
+	<sql id="selRole">
+		select r.id, r.code, r.name, r.parent_id parentId, r.remark,
+		  r.create_time createTime, r.del
+		from tb_sys_role r
+	</sql>
+	
+	<!-- 根据用户名ID获取用户角色：登录（每个用户只有一个角色） -->
+	<select id="getRoleByUserId" parameterClass="String" resultClass="RolePO">
+		<include refid="selRole"/> , tb_sys_user_role ur
+		where r.code = ur.role_id and ur.user_id=#id# and ur.del='1'
+	</select>
+	<!-- 根据用户名角色获取角色对象：登录（每个用户只有一个角色） -->
+	<select id="getRoleByUserType" parameterClass="String" resultClass="RolePO">
+		<include refid="selRole"/>
+		where r.code = #userId#
+	</select>
+	<!-- 根据用户名ID获取用户角色列表：登录（每个用户可以有多个角色） -->
+	<select id="getRolesByUserId" parameterClass="String" resultClass="RolePO">
+		select * from tb_sys_role r
+		where r.code in (
+			select ur.role_id from tb_sys_user_role ur where ur.user_id=#userId# and ur.del='1'
+		)
+	</select>
+	
+	
+	<!-- 根据条件获取角色：模糊查询 -->
+	<sql id="getDataByCondition">
+		<include refid="selRole" />
+		where r.del='1'
+		<isNotEmpty property="name" prepend=" and ">
+			r.name like '%$name$%'
+		</isNotEmpty>
+	</sql>
+	
+	<!-- 分页获取角色总数：支持模糊查询 -->
+	<select id="getPageListDataCount" parameterClass="map" resultClass="String">
+		select count(1) from (
+			<include refid="getDataByCondition" />
+		) t
+	</select>
+	
+	<!-- 分页获取角色：支持模糊查询 -->
+	<select id="getPageListData" parameterClass="map" resultClass="RolePO">
+		<include refid="getDataByCondition" />
+		<include refid="common.pageSqlByLimit" />
+	</select>
+	
+</sqlMap>
